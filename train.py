@@ -1,12 +1,12 @@
 '''task 1'''
 
+import argparse
 import os
+import time
 import numpy as np
 
 import joblib
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import (LinearRegression, LogisticRegression,
-                                 LogisticRegressionCV, RidgeCV, Lasso, LassoCV)
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
@@ -14,10 +14,36 @@ from vad_utils import read_label_from_file
 from evaluate import get_metrics
 from utils import sklearn_dataset_for_task_1, read_json, save_json
 
-frame_size = 0.032
-frame_shift = 0.008
-c = 1.0
-tol = 1e-5
+parser = argparse.ArgumentParser(description='VAD Training')
+parser.add_argument('--f_size', type=float, default=0.032,
+                    help='frame size')
+parser.add_argument('--f_shift', type=float, default=0.008,
+                    help='frame shift')
+parser.add_argument('--exp', type=str, default='train',
+                    help='Experiment ID')
+parser.add_argument('--save_name', type=str, default='task1_train',
+                    help='file name while saving data for lazing loading')
+parser.add_argument('--model', type=str, default='svm',
+                    help='what kind of model to use, supported: svm, linear, ridge, logistic, lasso')
+parser.add_argument('--scaler', default=False, action='store_true',
+                    help='whether to normalize the input data')
+parser.add_argument('--cv', type=int, default=None,
+                    help='cv value, only supported while using ridge, logistic or lasso')
+parser.add_argument('--tol', type=float, default=0.001,
+                    help='Tolerance for stopping criterion when using SVM.')
+parser.add_argument('--c', type=float, default=1.0,
+                    help='Regularization parameter when using SVM.')
+
+args = parser.parse_args()
+
+frame_size = args.f_size
+frame_shift = args.f_shift
+
+prefix = './task1/' + args.save_name + '_' + str(frame_size) + '_' + str(frame_shift)
+features_path = prefix + '_features.npy'
+target_path = prefix + '_target.npy'
+
+exp_id = args.exp + '_' + str(frame_size) + '_' + str(frame_shift)
 
 def train(m, X, y):
     m.fit(X, y)
@@ -31,19 +57,30 @@ def validate(m, X, y):
     return auc, eer
 
 def exp(m, features, target, name):
-    features_test = features[-50000:, :]
-    target_test = target[-50000:]
-    features = features[:-50000, :]
-    target = target[:-50000]
+    features_positive = features[target > 0.5, :]
+    features_negative = features[target < 0.5, :]
+    target_positive = target[target > 0.5]
+    target_negative = target[target < 0.5]
 
     print('Experiment Name: ', name)
+    start_time = time.time()
     score = train(m, features, target)
     print('Training score :', score)
-    joblib.dump(m, './task1/' + name + '.pkl')
-    auc, err = validate(m, features_test, target_test)
+    pritn('Training time :', time.time() - start_time)
+    print('-----------------------------------------')
+
+    joblib.dump(m, './models/' + name + '.pkl')
+
+    auc, err = validate(m, features, target)
     print('AUC :', auc)
     print('ERR :', err)
-    print()
+
+    pred_pos = m.predict(features_positive)
+    pred_neg = m.predict(features_negative)
+    acc_pos = np.sum(pred_pos) / np.sum(target_positive)
+    acc_neg = np.sum(pred_neg) / np.sum(target_negative)
+    print('Positive Acc :', acc_pos)
+    print('Negative Acc :', acc_pos)
 
 
 def main():
@@ -54,45 +91,42 @@ def main():
     else:
         label = read_json('./task1/label.json')
 
-    features, target = sklearn_dataset_for_task_1(label)
+    features, target = sklearn_dataset_for_task_1(
+                        label, frame_size=frame_size, frame_shift=frame_shift,
+                        features_path=features_path, target_path=target_path
+                        )
     target = target.astype(np.float32)
     features = features.astype(np.float32)
     assert features.shape[0] == target.shape[0], \
           ('The shape of features', features.shape, \
            'must match that of target', target.shape)
     
-    # features = features[:, -2].reshape(-1,1)
+    model_type = args.model
+    if model_type == 'svm':
+        from sklearn import svm
+        clf = svm.SVC(C=args.c, tol=args.tol)
+    elif model_type == 'linear':
+        from sklearn.linear_model import LinearRegression
+        clf = LinearRegression()
+    elif model_type == 'ridge':
+        from sklearn.linear_model import RidgeCV
+        clf = RidgeCV(cv=args.cv)
+    elif model_type == 'logistic':
+        from sklearn.linear_model import LogisticRegressionCV
+        clf = LogisticRegressionCV(cv=args.cv)
+    elif model_type == 'lasso':
+        from sklearn.linear_model import LassoCV
+        clf = LassoCV(cv=args.cv)
+    else:
+        raise NotImplementedError
 
-    # m = LinearSVC(max_iter=1000)
-    # exp(m, features, target, 'linear_svc_2')
+    if args.scaler:
+        m = Pipeline([('scaler', StandardScaler()),
+                    ('lasso_regression', LassoCV(cv=7))])
+    else:
+        m = clf
 
-    # m = Pipeline([('scaler', StandardScaler()),
-    #               ('linear_regression', LinearRegression())])
-    # exp(m, features, target, 'linear_regression_2')
-
-
-    # m = Pipeline([('scaler', StandardScaler()),
-    #               ('logistic_regression', LogisticRegression(max_iter=200))])
-    # exp(m, features, target, 'logistic_regression_2')
-
-
-    # m = Pipeline([('scaler', StandardScaler()),
-    #               ('ridge_regression', RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1]))])
-    # exp(m, features, target, 'ridge_regression_cv_2')
-
-    m = Pipeline([('scaler', StandardScaler()),
-                  ('lasso_regression', LassoCV(cv=7))])
-    exp(m, features, target, 'lasso_regression_cv_7')
-
-    # m = Pipeline([('scaler', StandardScaler()),
-    #               ('logistic_regression', LogisticRegressionCV(cv=5, max_iter=1000))])
-    # exp(m, features, target, 'logistic_regression_cv_5')
-
-
-    # m = Pipeline([('scaler', StandardScaler()),
-    #               ('logistic_regression', LogisticRegressionCV(cv=7, max_iter=1000))])
-    # exp(m, features, target, 'logistic_regression_cv_7')
-
+    exp(m, features, target, exp_id)
 
 if __name__ == '__main__':
     main()
