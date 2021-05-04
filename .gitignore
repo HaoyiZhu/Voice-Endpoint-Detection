@@ -4,3 +4,4 @@
 /wavs/
 *.pkl
 *.wav
+*.pyc
