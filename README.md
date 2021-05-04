@@ -18,7 +18,7 @@ or samples to make it faster.
 # Start training with: 
 python train.py
 
-- Some flags are supported for convinient customizing your strategy, you can check them in train.py.
+# Some flags are supported for convinient customizing your strategy, you can check them in train.py.
 # For example: 
 python train.py --f_size 0.064 --f_shift 0.032 --exp svm_not_normalized --save_name train --model svm
 ```
