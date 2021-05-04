@@ -1,0 +1,6 @@
+/data/
+/models/
+/task1/
+/wavs/
+*.pkl
+*.wav
