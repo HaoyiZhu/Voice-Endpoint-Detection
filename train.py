@@ -15,13 +15,13 @@ from evaluate import get_metrics
 from utils import sklearn_dataset_for_task_1, read_json, save_json
 
 parser = argparse.ArgumentParser(description='VAD Training')
-parser.add_argument('--f_size', type=float, default=0.032,
+parser.add_argument('--f_size', type=float, default=0.064,
                     help='frame size')
-parser.add_argument('--f_shift', type=float, default=0.008,
+parser.add_argument('--f_shift', type=float, default=0.032,
                     help='frame shift')
-parser.add_argument('--exp', type=str, default='train',
+parser.add_argument('--exp', type=str, default='svm_not_normalized',
                     help='Experiment ID')
-parser.add_argument('--save_name', type=str, default='task1_train',
+parser.add_argument('--save_name', type=str, default='train',
                     help='file name while saving data for lazing loading')
 parser.add_argument('--model', type=str, default='svm',
                     help='what kind of model to use, supported: svm, linear, ridge, logistic, lasso')

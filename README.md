@@ -5,6 +5,8 @@ aims to detect the voice endpoints in audio, which consists of two tasks: the fi
 on simple linear classifier and short-term signal features, while the second one
 is based on statistical model classifier and frequency domain features.
 
+# Task 1
+
 ## Requirements
 
 - python 3.6+
@@ -24,6 +26,17 @@ python train.py --f_size 0.064 --f_shift 0.032 --exp svm_not_normalized --save_n
 ```
 
 ## Inference
-- To be continued.
+```bash
+# By default, the results will be saved in `'./task1/task1_prediction_on_test'`. Please refer to the code for all flags.
+# Example:
+python inference.py --model {model name}
+```
 
+## Validation
+- To use existed model to validate, you can run:
+```bash
+python validate.py --model {model name}
+```
+# Task 2
+- To be continued.
 
