@@ -122,7 +122,7 @@ def main():
 
     if args.scaler:
         m = Pipeline([('scaler', StandardScaler()),
-                    ('lasso_regression', LassoCV(cv=7))])
+                    ('clf', clf)])
     else:
         m = clf
 
