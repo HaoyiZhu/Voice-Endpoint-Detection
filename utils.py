@@ -27,10 +27,10 @@ def read_json(filename):
 def _read_wav_scipy(filename, dataset='dev', normalize=True, silence=True):
     if filename.split('.')[-1] != 'wav':
         filename = filename + '.wav'
-        if not os.path.exists(filename):
-            filename = os.path.join('./wavs/' + dataset, filename)
-        if not silence:
-            print('Trying to read .wav file from', filename)
+    if not os.path.exists(filename):
+        filename = os.path.join('./wavs/' + dataset, filename)
+    if not silence:
+        print('Trying to read .wav file from', filename)
 
     sample_rate, data = wavfile.read(filename)
     data = data.astype(np.float32)
@@ -43,10 +43,10 @@ def _read_wav_scipy(filename, dataset='dev', normalize=True, silence=True):
 def _read_wav_wave(filename, dataset='dev', normalize=True, silence=True):
     if filename.split('.')[-1] != 'wav':
         filename = filename + '.wav'
-        if not os.path.exists(filename):
-            filename = os.path.join('./wavs/' + dataset, filename)
-        if not silence:
-            print('Trying to read .wav file from', filename)
+    if not os.path.exists(filename):
+        filename = os.path.join('./wavs/' + dataset, filename)
+    if not silence:
+        print('Trying to read .wav file from', filename)
 
     wav_file = wave.open(filename,'r')
     # num_channel = wav_file.getnchannels()
@@ -127,7 +127,9 @@ def _extract_features(data, frame_size=0.032, frame_shift=0.008):
     # mfcc_features = mfcc(wav_data, 16000)
     # filterbank_features = logfbank(wav_data, 16000)
     # print(data_norm.shape, fft_data.shape, zcr.shape, energy.shape, amplitude.shape)
-    all_features = np.concatenate((data_norm, fft_data, zcr, energy, amplitude), axis=1)
+
+    # all_features = np.concatenate((data_norm, fft_data, zcr, energy, amplitude), axis=1)
+    all_features = np.concatenate((fft_data, zcr, energy, amplitude), axis=1)
 
     return all_features
 
@@ -167,4 +169,22 @@ def sklearn_dataset_for_task_1(label, frame_size=0.032, frame_shift=0.008, silen
     np.save(target_path[:-4], target)
 
     return features, target
+
+def save_prediction_labels(pred, save_dir='./task1', file_name='task1_prediction_on_test', save_format='txt'):
+	if not os.path.exists(save_dir):
+		os.mkdir(save_dir)
+
+	file_name = os.path.join(save_dir, file_name + '.' + save_format)
+
+	if save_format == 'json':
+		save_json(pred, file_name)
+
+	f = open(file_name,'a')
+
+	for f_name in pred.keys():
+		line = str(f_name) + ' ' + pred[f_name]
+		f.write(line)
+		f.write('\n')
+
+	f.close()
     

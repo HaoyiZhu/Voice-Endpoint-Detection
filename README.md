@@ -2,8 +2,8 @@
 
 This repository contains codes of Project 1 for Intelligent speech recognition. This project
 aims to detect the voice endpoints in audio, which consists of two tasks: the first one based 
-on linear classifier and speech short-term signal characteristics method, while the second one
-is based on statistical model classifier and speech frequency domain characteristics.
+on simple linear classifier and short-term signal features, while the second one
+is based on statistical model classifier and frequency domain features.
 
 ## Requirements
 

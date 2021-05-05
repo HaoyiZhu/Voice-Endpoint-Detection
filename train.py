@@ -1,10 +1,10 @@
-'''task 1'''
+''' Script for task 1 training'''
 
 import argparse
 import os
 import time
-import numpy as np
 
+import numpy as np
 import joblib
 
 from sklearn.preprocessing import StandardScaler
@@ -66,7 +66,7 @@ def exp(m, features, target, name):
     start_time = time.time()
     score = train(m, features, target)
     print('Training score :', score)
-    pritn('Training time :', time.time() - start_time)
+    print('Training time :', time.time() - start_time)
     print('-----------------------------------------')
 
     joblib.dump(m, './models/' + name + '.pkl')
