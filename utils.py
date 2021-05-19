@@ -151,7 +151,7 @@ def extract_features(data, task=1, frame_size=0.032, frame_shift=0.008):
     else:
         return _extract_features_for_task2(data, frame_size, frame_shift)
 
-def sklearn_dataset(label, task=1,
+def sklearn_dataset(label, task=1, mode='train',
                     frame_size=0.032, frame_shift=0.008, silence=True,
                     features_path='./task1/train_features.npy',
                     target_path='./task1/train_target.npy'):
@@ -167,7 +167,12 @@ def sklearn_dataset(label, task=1,
     target = list(label.values())
     features = []
 
-    dataset = {1: 'dev', 2: 'train'}
+    if mode == 'train':
+        dataset = {1: 'dev', 2: 'train'}
+    elif mode == 'val':
+        dataset = {2: 'dev'}
+    else:
+        raise NotImplementedError
 
     for i in tqdm(range(len(file_names))):
         _, wav_data = read_wav(file_names[i], dataset[task], silence=silence)

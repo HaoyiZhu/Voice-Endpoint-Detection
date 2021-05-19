@@ -52,7 +52,8 @@ target_path = prefix + '_target.npy'
 
 exp_id = args.exp + '_' + str(frame_size) + '_' + str(frame_shift)
 
-label_path = './task' + str(args.task) + '/train_label' + '_' + str(frame_size) + '_' + str(frame_shift) + '.json'
+train_label_path = './task' + str(args.task) + '/train_label' + '_' + str(frame_size) + '_' + str(frame_shift) + '.json'
+val_label_path = './task' + str(args.task) + '/val_label' + '_' + str(frame_size) + '_' + str(frame_shift) + '.json'
 
 def train(m, X, y):
     m.fit(X, y)
@@ -65,51 +66,63 @@ def validate(m, X, y):
     auc, eer = get_metrics(y_pred, y_true)
     return auc, eer
 
-def exp(m, features, target, name):
-    features_positive = features[target > 0.5, :]
-    features_negative = features[target < 0.5, :]
-    target_positive = target[target > 0.5]
-    target_negative = target[target < 0.5]
-
+def exp(m, features_train, target_train, features_val, target_val, name):
     print('Experiment Name: ', name)
     start_time = time.time()
-    score = train(m, features, target)
+    score = train(m, features_train, target_train)
     print('Training score :', score)
     print('Training time :', time.time() - start_time)
     print('-----------------------------------------')
 
     joblib.dump(m, './models/' + name + '.pkl')
 
-    auc, err = validate(m, features, target)
-    print('AUC :', auc)
-    print('ERR :', err)
+    train_auc, train_err = validate(m, features_train, target_train)
+    print('Taining AUC :', train_auc)
+    print('Taining ERR :', train_err)
 
-    pred_pos = m.predict(features_positive)
-    pred_neg = m.predict(features_negative)
-    acc_pos = np.sum(pred_pos) / np.sum(target_positive)
-    acc_neg = np.sum(pred_neg) / np.sum(target_negative)
-    print('Positive Acc :', acc_pos)
-    print('Negative Acc :', acc_pos)
+    if target_val:
+        print('-----------------------------------------')
+        train_auc, train_err = validate(m, features_val, target_val)
+        print('Val AUC :', val_auc)
+        print('Val ERR :', val_err)
 
 def main():
-    if not os.path.exists(label_path):
-    	print('loading labels...')
-        label_file = "data/dev_label.txt" if args.task == 1 else "data/train_label.txt"
-        label = read_label_from_file(label_file, frame_size=frame_size, frame_shift=frame_shift)
-        save_json(label, label_path)
+    if not os.path.exists(train_label_path):
+        print('loading training labels...')
+        train_label_file = "data/dev_label.txt" if args.task == 1 else "data/train_label.txt"
+        train_label = read_label_from_file(train_label_file, frame_size=frame_size, frame_shift=frame_shift)
+        save_json(train_label, train_label_path)
     else:
-    	print('lazy loading labels...')
-        label = read_json(label_path)
+        print('lazy loading training labels...')
+        train_label = read_json(train_label_path)
 
-    features, target = sklearn_dataset(
-                        label, task=args.task,
+    features_train, target_train = sklearn_dataset(
+                        train_label, task=args.task, mode='train',
                         frame_size=frame_size, frame_shift=frame_shift,
                         features_path=features_path, target_path=target_path
                         )
 
+    if args.task == 2:
+        if not os.path.exists(val_label_path):
+            print('loading validation labels...')
+            val_label_file = "data/dev_label.txt"
+            val_label = read_label_from_file(val_label_file, frame_size=frame_size, frame_shift=frame_shift)
+            save_json(val_label, val_label_path)
+        else:
+            print('lazy loading validation labels...')
+            val_label = read_json(val_label_path)
+        features_val, target_val = sklearn_dataset(
+                            val_label, mode='val',
+                            frame_size=frame_size, frame_shift=frame_shift,
+                            features_path=features_path, target_path=target_path
+                            )
+    else:
+        features_val, target_val = None, None
+
+
     m = build_model(args)
 
-    exp(m, features, target, exp_id)
+    exp(m, features_train, target_train, features_val, target_val, exp_id)
 
 if __name__ == '__main__':
     main()
