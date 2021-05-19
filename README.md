@@ -8,7 +8,6 @@ is based on statistical model classifier and frequency domain features.
 # Task 1
 
 ## Requirements
-
 - python 3.6+
 - scikit-learn == 0.24.2
 - tqdm

@@ -12,17 +12,21 @@ from sklearn.pipeline import Pipeline
 
 from vad_utils import read_label_from_file
 from evaluate import get_metrics
-from utils import sklearn_dataset_for_task_1, read_json, save_json
+from utils import sklearn_dataset, read_json, save_json, build_model
 
+"""----------------------------- Training options -----------------------------"""
 parser = argparse.ArgumentParser(description='VAD Training')
-parser.add_argument('--f_size', type=float, default=0.064,
+parser.add_argument('--f_size', type=float, default=0.032,
                     help='frame size')
-parser.add_argument('--f_shift', type=float, default=0.032,
+parser.add_argument('--f_shift', type=float, default=0.008,
                     help='frame shift')
+parser.add_argument('--task', type=int, default=1,
+                    help='task id')
 parser.add_argument('--exp', type=str, default='svm_not_normalized',
                     help='Experiment ID')
 parser.add_argument('--save_name', type=str, default='train',
                     help='file name while saving data for lazing loading')
+"""----------------------------- Only meaningful in task1 -----------------------------"""
 parser.add_argument('--model', type=str, default='svm',
                     help='what kind of model to use, supported: svm, linear, ridge, logistic, lasso')
 parser.add_argument('--scaler', default=False, action='store_true',
@@ -33,17 +37,22 @@ parser.add_argument('--tol', type=float, default=0.001,
                     help='Tolerance for stopping criterion when using SVM.')
 parser.add_argument('--c', type=float, default=1.0,
                     help='Regularization parameter when using SVM.')
+"""----------------------------- Only meaningful in task2 -----------------------------"""
+parser.add_argument('--n_cpnt', type=int, default=2,
+                    help='The number of mixture components.')
 
 args = parser.parse_args()
 
 frame_size = args.f_size
 frame_shift = args.f_shift
 
-prefix = './task1/' + args.save_name + '_' + str(frame_size) + '_' + str(frame_shift)
+prefix = './task' + str(args.task) + '/' + args.save_name + '_' + str(frame_size) + '_' + str(frame_shift)
 features_path = prefix + '_features.npy'
 target_path = prefix + '_target.npy'
 
 exp_id = args.exp + '_' + str(frame_size) + '_' + str(frame_shift)
+
+label_path = './task' + str(args.task) + '/train_label' + '_' + str(frame_size) + '_' + str(frame_shift) + '.json'
 
 def train(m, X, y):
     m.fit(X, y)
@@ -82,49 +91,23 @@ def exp(m, features, target, name):
     print('Positive Acc :', acc_pos)
     print('Negative Acc :', acc_pos)
 
-
 def main():
-    if not os.path.exists('./task1/label.json'):
-        label_file = "data/dev_label.txt"
-        label = read_label_from_file(label_file)
-        save_json(label, './task1/label.json')
+    if not os.path.exists(label_path):
+    	print('loading labels...')
+        label_file = "data/dev_label.txt" if args.task == 1 else "data/train_label.txt"
+        label = read_label_from_file(label_file, frame_size=frame_size, frame_shift=frame_shift)
+        save_json(label, label_path)
     else:
-        label = read_json('./task1/label.json')
+    	print('lazy loading labels...')
+        label = read_json(label_path)
 
-    features, target = sklearn_dataset_for_task_1(
-                        label, frame_size=frame_size, frame_shift=frame_shift,
+    features, target = sklearn_dataset(
+                        label, task=args.task,
+                        frame_size=frame_size, frame_shift=frame_shift,
                         features_path=features_path, target_path=target_path
                         )
-    target = target.astype(np.float32)
-    features = features.astype(np.float32)
-    assert features.shape[0] == target.shape[0], \
-          ('The shape of features', features.shape, \
-           'must match that of target', target.shape)
-    
-    model_type = args.model
-    if model_type == 'svm':
-        from sklearn import svm
-        clf = svm.SVC(C=args.c, tol=args.tol)
-    elif model_type == 'linear':
-        from sklearn.linear_model import LinearRegression
-        clf = LinearRegression()
-    elif model_type == 'ridge':
-        from sklearn.linear_model import RidgeCV
-        clf = RidgeCV(cv=args.cv)
-    elif model_type == 'logistic':
-        from sklearn.linear_model import LogisticRegressionCV
-        clf = LogisticRegressionCV(cv=args.cv)
-    elif model_type == 'lasso':
-        from sklearn.linear_model import LassoCV
-        clf = LassoCV(cv=args.cv)
-    else:
-        raise NotImplementedError
 
-    if args.scaler:
-        m = Pipeline([('scaler', StandardScaler()),
-                    ('clf', clf)])
-    else:
-        m = clf
+    m = build_model(args)
 
     exp(m, features, target, exp_id)
 

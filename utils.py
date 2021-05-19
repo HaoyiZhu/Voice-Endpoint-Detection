@@ -12,7 +12,8 @@ import scipy.fftpack as fftpack
 
 from tqdm import tqdm
 
-# from python_speech_features import mfcc, logfbank
+# from python_speech_features import mfcc, logfbank, delta
+from speech_spectral_features import mfcc, logfbank, delta
 
 def save_json(data, filename):
     with open(filename, 'w') as f:
@@ -110,7 +111,7 @@ def ZeroCR(data, frame_size=0.032, frame_shift=0.008):
 def norm_1d(data):
     return (data - np.mean(data)) / np.max(data)
 
-def _extract_features(data, frame_size=0.032, frame_shift=0.008):
+def _extract_features_for_task1(data, frame_size=0.032, frame_shift=0.008):
     data_frame = cut_to_frame(data, frame_size=frame_size, frame_shift=frame_shift,
                               use_hamming=False)    # frame_num * frame_size
 
@@ -124,18 +125,36 @@ def _extract_features(data, frame_size=0.032, frame_shift=0.008):
     energy = np.sum((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
     amplitude = np.sum(np.abs(data_frame),axis=1).reshape(-1,1)    # frame_num * 1
 
-    # mfcc_features = mfcc(wav_data, 16000)
-    # filterbank_features = logfbank(wav_data, 16000)
-    # print(data_norm.shape, fft_data.shape, zcr.shape, energy.shape, amplitude.shape)
-
-    # all_features = np.concatenate((data_norm, fft_data, zcr, energy, amplitude), axis=1)
     all_features = np.concatenate((fft_data, zcr, energy, amplitude), axis=1)
 
     return all_features
 
-def sklearn_dataset_for_task_1(label, frame_size=0.032, frame_shift=0.008, silence=True,
-                                        features_path='./task1/train_features.npy',
-                                        target_path='./task1/train_target.npy'):
+def _get_mfcc(data, fs):
+    wav_feature =  mfcc(data, fs)
+    d_mfcc_feat = delta(wav_feature, 1)
+    d_mfcc_feat2 = delta(wav_feature, 2)
+    feature = np.hstack((wav_feature, d_mfcc_feat, d_mfcc_feat2))
+    return feature
+
+def _extract_features_for_task2(data, frame_size=0.032, frame_shift=0.008):
+    mfcc_features = _get_mfcc(data, 16000)
+    filterbank_features = logfbank(data, 16000)
+
+    all_features = np.concatenate((mfcc_features, filterbank_features), axis=1)
+
+    return all_features
+
+def extract_features(data, task=1, frame_size=0.032, frame_shift=0.008):
+    assert (task == 1 or task == 2), 'Task ID must be 1 or 2'
+    if task == 1:
+        return _extract_features_for_task1(data, frame_size, frame_shift)
+    else:
+        return _extract_features_for_task2(data, frame_size, frame_shift)
+
+def sklearn_dataset(label, task=1,
+                    frame_size=0.032, frame_shift=0.008, silence=True,
+                    features_path='./task1/train_features.npy',
+                    target_path='./task1/train_target.npy'):
     if os.path.exists(features_path) and os.path.exists(target_path):
         print('lazy loading features and targets...')
         features = np.load(features_path)
@@ -148,10 +167,12 @@ def sklearn_dataset_for_task_1(label, frame_size=0.032, frame_shift=0.008, silen
     target = list(label.values())
     features = []
 
-    for i in tqdm(range(len(file_names))):
-        _, wav_data = read_wav(file_names[i], 'dev', silence=silence)
+    dataset = {1: 'dev', 2: 'train'}
 
-        feature = _extract_features(wav_data, frame_size=frame_size, frame_shift=frame_shift)
+    for i in tqdm(range(len(file_names))):
+        _, wav_data = read_wav(file_names[i], dataset[task], silence=silence)
+
+        feature = extract_features(wav_data, task=task, frame_size=frame_size, frame_shift=frame_shift)
         frame_num = feature.shape[0]
         label_pad = np.pad(target[i], (0, np.maximum(frame_num - len(target[i]), 0)))[:frame_num]
         target[i] = label_pad
@@ -159,6 +180,13 @@ def sklearn_dataset_for_task_1(label, frame_size=0.032, frame_shift=0.008, silen
 
     target = np.concatenate(target)
     features = np.concatenate(features)
+
+    target = target.astype(np.float32)
+    features = features.astype(np.float32)
+
+    assert features.shape[0] == target.shape[0], \
+          ('The shape of features', features.shape, \
+           'must match that of target', target.shape)
 
     if not os.path.exists(os.path.dirname(features_path)):
         os.mkdir(os.path.dirname(features_path))
@@ -168,7 +196,7 @@ def sklearn_dataset_for_task_1(label, frame_size=0.032, frame_shift=0.008, silen
     np.save(features_path[:-4], features)
     np.save(target_path[:-4], target)
 
-    return features, target
+    return features, target    
 
 def save_prediction_labels(pred, save_dir='./task1', file_name='task1_prediction_on_test', save_format='txt'):
 	if not os.path.exists(save_dir):
@@ -187,4 +215,42 @@ def save_prediction_labels(pred, save_dir='./task1', file_name='task1_prediction
 		f.write('\n')
 
 	f.close()
-    
+
+def build_task1_model(model_type, scaler):
+    if model_type == 'svm':
+        from sklearn import svm
+        clf = svm.SVC(C=args.c, tol=args.tol)
+    elif model_type == 'linear':
+        from sklearn.linear_model import LinearRegression
+        clf = LinearRegression()
+    elif model_type == 'ridge':
+        from sklearn.linear_model import RidgeCV
+        clf = RidgeCV(cv=args.cv)
+    elif model_type == 'logistic':
+        from sklearn.linear_model import LogisticRegressionCV
+        clf = LogisticRegressionCV(cv=args.cv)
+    elif model_type == 'lasso':
+        from sklearn.linear_model import LassoCV
+        clf = LassoCV(cv=args.cv)
+    else:
+        raise NotImplementedError
+
+    if scaler:
+        m = Pipeline([('scaler', StandardScaler()),
+                    ('clf', clf)])
+    else:
+        m = clf
+
+    return m
+
+def build_task2_model(n_cpnt):
+    from sklearn.mixture import GaussianMixture
+    gm = GaussianMixture(n_components=n_cpnt)
+
+    return gm
+
+def build_model(args):
+    if args.task == 1:
+        return build_task1_model(args.model, args.scaler)
+    else:
+        return build_task2_model(args.n_cpnt)
