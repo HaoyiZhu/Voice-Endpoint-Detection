@@ -1,7 +1,9 @@
 /data/
 /models/
 /task1/
+/task2/
 /wavs/
 *.pkl
 *.wav
 *.pyc
+*.pdf
