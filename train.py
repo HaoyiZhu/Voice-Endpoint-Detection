@@ -102,11 +102,15 @@ def main():
                         features_path=train_features_path, target_path=train_target_path
                         )
 
+    '''optional'''
     from sklearn.manifold import TSNE
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     X_embedded = TSNE(n_components=2).fit_transform(features_train[0::500,:])
     plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train)
     plt.savefig('vis.png')
+    '''optional'''
 
     if args.task == 2:
         if not os.path.exists(val_label_path):
