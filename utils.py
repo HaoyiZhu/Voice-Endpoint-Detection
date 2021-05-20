@@ -122,23 +122,23 @@ def _extract_features_for_task1(data, frame_size=0.032, frame_shift=0.008):
 
     fft_data = np.abs(fftpack.fft(data_norm)).astype(np.float32)    # frame_num * frame_size
 
-    energy = np.sum((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
-    amplitude = np.sum(np.abs(data_frame),axis=1).reshape(-1,1)    # frame_num * 1
+    energy = np.mean((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
+    amplitude = np.mean(np.abs(data_frame),axis=1).reshape(-1,1)    # frame_num * 1
 
     all_features = np.concatenate((fft_data, zcr, energy, amplitude), axis=1)
 
     return all_features
 
-def _get_mfcc(data, fs):
-    wav_feature =  mfcc(data, fs)
+def _get_mfcc(data, fs, frame_size=0.032, frame_shift=0.008):
+    wav_feature =  mfcc(data, fs, winlen=frame_size, winstep=frame_shift)
     d_mfcc_feat = delta(wav_feature, 1)
     d_mfcc_feat2 = delta(wav_feature, 2)
     feature = np.hstack((wav_feature, d_mfcc_feat, d_mfcc_feat2))
     return feature
 
 def _extract_features_for_task2(data, frame_size=0.032, frame_shift=0.008):
-    mfcc_features = _get_mfcc(data, 16000)
-    filterbank_features = logfbank(data, 16000)
+    mfcc_features = _get_mfcc(data, 16000, frame_size=frame_size, frame_shift=frame_shift)
+    filterbank_features = logfbank(data, 16000, winlen=frame_size, winstep=frame_shift)
 
     all_features = np.concatenate((mfcc_features, filterbank_features), axis=1)
 
@@ -204,22 +204,22 @@ def sklearn_dataset(label, task=1, mode='train',
     return features, target    
 
 def save_prediction_labels(pred, save_dir='./task1', file_name='task1_prediction_on_test', save_format='txt'):
-	if not os.path.exists(save_dir):
-		os.mkdir(save_dir)
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
 
-	file_name = os.path.join(save_dir, file_name + '.' + save_format)
+    file_name = os.path.join(save_dir, file_name + '.' + save_format)
 
-	if save_format == 'json':
-		save_json(pred, file_name)
+    if save_format == 'json':
+        save_json(pred, file_name)
 
-	f = open(file_name,'a')
+    f = open(file_name,'a')
 
-	for f_name in pred.keys():
-		line = str(f_name) + ' ' + pred[f_name]
-		f.write(line)
-		f.write('\n')
+    for f_name in pred.keys():
+        line = str(f_name) + ' ' + pred[f_name]
+        f.write(line)
+        f.write('\n')
 
-	f.close()
+    f.close()
 
 def build_task1_model(model_type, scaler):
     if model_type == 'svm':
@@ -250,7 +250,8 @@ def build_task1_model(model_type, scaler):
 
 def build_task2_model(n_cpnt):
     from sklearn.mixture import GaussianMixture
-    gm = GaussianMixture(n_components=n_cpnt)
+
+    gm = GaussianMixture(n_components=n_cpnt, tol=1e-5, max_iter=1000)#, max_iter=1000)
 
     return gm
 

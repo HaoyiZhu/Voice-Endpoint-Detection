@@ -7,9 +7,6 @@ import time
 import numpy as np
 import joblib
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-
 from vad_utils import read_label_from_file
 from evaluate import get_metrics
 from utils import sklearn_dataset, read_json, save_json, build_model
@@ -24,8 +21,8 @@ parser.add_argument('--task', type=int, default=1,
                     help='task id')
 parser.add_argument('--exp', type=str, default='svm_not_normalized',
                     help='Experiment ID')
-parser.add_argument('--save_name', type=str, default='train',
-                    help='file name while saving data for lazing loading')
+# parser.add_argument('--save_name', type=str, default='train',
+#                     help='file name while saving data for lazing loading')
 """----------------------------- Only meaningful in task1 -----------------------------"""
 parser.add_argument('--model', type=str, default='svm',
                     help='what kind of model to use, supported: svm, linear, ridge, logistic, lasso')
@@ -46,9 +43,12 @@ args = parser.parse_args()
 frame_size = args.f_size
 frame_shift = args.f_shift
 
-prefix = './task' + str(args.task) + '/' + args.save_name + '_' + str(frame_size) + '_' + str(frame_shift)
-features_path = prefix + '_features.npy'
-target_path = prefix + '_target.npy'
+prefix_train = './task' + str(args.task) + '/' + 'train' + '_' + str(frame_size) + '_' + str(frame_shift)
+prefix_val = './task' + str(args.task) + '/' + 'val' + '_' + str(frame_size) + '_' + str(frame_shift)
+train_features_path = prefix_train + '_features.npy'
+train_target_path = prefix_train + '_target.npy'
+val_features_path = prefix_val + '_features.npy'
+val_target_path = prefix_val + '_target.npy'
 
 exp_id = args.exp + '_' + str(frame_size) + '_' + str(frame_shift)
 
@@ -80,9 +80,9 @@ def exp(m, features_train, target_train, features_val, target_val, name):
     print('Taining AUC :', train_auc)
     print('Taining ERR :', train_err)
 
-    if target_val:
+    if target_val is not None:
         print('-----------------------------------------')
-        train_auc, train_err = validate(m, features_val, target_val)
+        val_auc, val_err = validate(m, features_val, target_val)
         print('Val AUC :', val_auc)
         print('Val ERR :', val_err)
 
@@ -99,8 +99,14 @@ def main():
     features_train, target_train = sklearn_dataset(
                         train_label, task=args.task, mode='train',
                         frame_size=frame_size, frame_shift=frame_shift,
-                        features_path=features_path, target_path=target_path
+                        features_path=train_features_path, target_path=train_target_path
                         )
+
+    from sklearn.manifold import TSNE
+    import matplotlib.pyplot as plt
+    X_embedded = TSNE(n_components=2).fit_transform(features_train[0::500,:])
+    plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train)
+    plt.savefig('vis.png')
 
     if args.task == 2:
         if not os.path.exists(val_label_path):
@@ -112,13 +118,12 @@ def main():
             print('lazy loading validation labels...')
             val_label = read_json(val_label_path)
         features_val, target_val = sklearn_dataset(
-                            val_label, mode='val',
+                            val_label, task=args.task, mode='val',
                             frame_size=frame_size, frame_shift=frame_shift,
-                            features_path=features_path, target_path=target_path
+                            features_path=val_features_path, target_path=val_target_path
                             )
     else:
         features_val, target_val = None, None
-
 
     m = build_model(args)
 
