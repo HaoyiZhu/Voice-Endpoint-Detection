@@ -108,7 +108,7 @@ def main():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     X_embedded = TSNE(n_components=2).fit_transform(features_train[0::500,:])
-    plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train)
+    plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train[0::500,:])
     plt.savefig('vis.png')
     '''optional'''
 
