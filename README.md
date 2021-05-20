@@ -46,7 +46,7 @@ python train.py --task 2
 
 # Task 2 only supports GMM currently. You can customize the number of components.
 # For example: 
-python train.py --task 2 --f_size 0.032 --f_shift 0.008 --exp gmm --save_name train --n_cpnt 10
+python train.py --task 2 --f_size 0.032 --f_shift 0.008 --exp gmm --n_cpnt 10
 ```
 
 ## Validation
