@@ -56,12 +56,23 @@ train_label_path = './task' + str(args.task) + '/train_label' + '_' + str(frame_
 val_label_path = './task' + str(args.task) + '/val_label' + '_' + str(frame_size) + '_' + str(frame_shift) + '.json'
 
 def train(m, X, y):
-    m.fit(X, y)
-    score = m.score(X, y)
+    if args.task == 1:
+        m.fit(X, y)
+        score = m.score(X, y)
+    else:
+        score1 = m[0].fit(X[y >= 0.5])
+        score2 = m[1].fit(X[y < 0.5])
+        score = [score1, score2]
+
     return score
 
 def validate(m, X, y):
-    y_pred = m.predict(X).tolist()
+    if args.task == 1:
+        y_pred = m.predict(X).tolist()
+    else:
+        y_pred1 = m[0].score_samples(X)
+        y_pred2 = m[1].score_samples(X)
+        y_pred = (y_pred1 > y_pred2).tolist()
     y_true = y.tolist()
     auc, eer = get_metrics(y_pred, y_true)
     return auc, eer
@@ -103,13 +114,13 @@ def main():
                         )
 
     '''optional'''
-    from sklearn.manifold import TSNE
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    X_embedded = TSNE(n_components=2).fit_transform(features_train[0::500,:])
-    plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train[0::500])
-    plt.savefig('vis.png')
+    # from sklearn.manifold import TSNE
+    # import matplotlib
+    # matplotlib.use('Agg')
+    # import matplotlib.pyplot as plt
+    # X_embedded = TSNE(n_components=2).fit_transform(features_train[0::500,:])
+    # plt.scatter(X_embedded[:,0], X_embedded[:,1],c=target_train[0::500])
+    # plt.savefig('vis.png')
     '''optional'''
 
     if args.task == 2:

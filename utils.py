@@ -122,8 +122,8 @@ def _extract_features_for_task1(data, frame_size=0.032, frame_shift=0.008):
 
     fft_data = np.abs(fftpack.fft(data_norm)).astype(np.float32)    # frame_num * frame_size
 
-    energy = np.mean((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
-    amplitude = np.mean(np.abs(data_frame),axis=1).reshape(-1,1)    # frame_num * 1
+    energy = np.sum((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
+    amplitude = np.sum(np.abs(data_frame),axis=1).reshape(-1,1)    # frame_num * 1
 
     all_features = np.concatenate((fft_data, zcr, energy, amplitude), axis=1)
 
@@ -137,10 +137,13 @@ def _get_mfcc(data, fs, frame_size=0.032, frame_shift=0.008):
     return feature
 
 def _extract_features_for_task2(data, frame_size=0.032, frame_shift=0.008):
+    data_frame = cut_to_frame(data, frame_size=frame_size, frame_shift=frame_shift,
+                              use_hamming=False)    # frame_num * frame_size
+    energy = np.sum((data_frame ** 2), axis=1).reshape(-1,1)    # frame_num * 1
     mfcc_features = _get_mfcc(data, 16000, frame_size=frame_size, frame_shift=frame_shift)
-    filterbank_features = logfbank(data, 16000, winlen=frame_size, winstep=frame_shift)
+    # filterbank_features = logfbank(data, 16000, winlen=frame_size, winstep=frame_shift)
 
-    all_features = np.concatenate((mfcc_features, filterbank_features), axis=1)
+    all_features = np.concatenate((energy, mfcc_features), axis=1)
 
     return all_features
 
@@ -251,9 +254,9 @@ def build_task1_model(model_type, scaler):
 def build_task2_model(n_cpnt):
     from sklearn.mixture import GaussianMixture
 
-    gm = GaussianMixture(n_components=n_cpnt, tol=1e-5, max_iter=1000)#, max_iter=1000)
-
-    return gm
+    gm1 = GaussianMixture(n_components=n_cpnt, warm_start = True)#, max_iter=1000)
+    gm2 = GaussianMixture(n_components=n_cpnt, warm_start = True)
+    return [gm1, gm2]
 
 def build_model(args):
     if args.task == 1:
