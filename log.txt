@@ -1,0 +1,126 @@
+Experiment Name:  gmm_0.032_0.008
+Training score : [GaussianMixture(n_components=2, warm_start=True), GaussianMixture(n_components=2, warm_start=True)]
+Training time : 134.5048644542694
+-----------------------------------------
+Taining AUC : 0.9309854085973097
+Taining ERR : 0.10044627871805582
+-----------------------------------------
+Val AUC : 0.9298596607422297
+Val ERR : 0.09774332342352514
+
+
+Experiment Name:  gmm_0.032_0.008
+Training score : [GaussianMixture(n_components=3, warm_start=True), GaussianMixture(n_components=3, warm_start=True)]
+Training time : 331.5459940433502        
+-----------------------------------------                      
+Taining AUC : 0.9383168832977107                               
+Taining ERR : 0.08924297454913119                              
+-----------------------------------------                                                                                      
+Val AUC : 0.9374964802456381                                                                                                   
+Val ERR : 0.08746276853001723  
+
+                                                                                                
+Experiment Name:  gmm_0.032_0.008                                                                                              
+Training score : [GaussianMixture(n_components=4, warm_start=True), GaussianMixture(n_components=4, warm_start=True)]
+Training time : 1129.124234199524                                                                                              
+-----------------------------------------
+Taining AUC : 0.9431827734457517         
+Taining ERR : 0.06073836520794321        
+-----------------------------------------                      
+Val AUC : 0.941597316113207                                    
+Val ERR : 0.05872432474622668    
+
+                              
+Experiment Name:  gmm_0.032_0.008                                                                                              
+Training score : [GaussianMixture(n_components=5, warm_start=True), GaussianMixture(n_components=5, warm_start=True)]
+Training time : 724.690685749054                                                                                               
+-----------------------------------------                                                                                      
+Taining AUC : 0.9433887546617471                      
+Taining ERR : 0.08195532259971137                                                                                              
+-----------------------------------------
+Val AUC : 0.943606465824173
+Val ERR : 0.07960321741227172     
+
+                             
+Experiment Name:  gmm_0.032_0.008
+Training score : [GaussianMixture(n_components=6, warm_start=True), GaussianMixture(n_components=6, warm_start=True)]          
+Training time : 921.6321017742157                              
+-----------------------------------------                      Taining AUC : 0.9399177530831931 
+Taining ERR : 0.06122668509538973                                                                                              -----------------------------------------                                                                                      
+Val AUC : 0.9392887886582341                                   
+Val ERR : 0.06341580356557966    
+
+                                                                                              
+Experiment Name:  gmm_0.032_0.008 
+Training score : [GaussianMixture(n_components=7, warm_start=True), GaussianMixture(n_components=7, warm_start=True)]          
+Training time : 1880.3710501194 
+-----------------------------------------
+Taining AUC : 0.9420691568499018         
+Taining ERR : 0.05862643973592806                              
+-----------------------------------------                      
+Val AUC : 0.9428327821009036                                   
+Val ERR : 0.057306845851609334 
+
+
+Experiment Name:  gmm_0.032_0.008                                                                                              
+/home/zhuhy/anaconda3/envs/vad/lib/python3.8/site-packages/sklearn/mixture/_base.py:265: ConvergenceWarning: Initialization 1 d
+id not converge. Try different init parameters, or increase max_iter, tol or check for degenerate data.                
+  warnings.warn('Initialization %d did not converge. '
+Training score : [GaussianMixture(n_components=8, warm_start=True), GaussianMixture(n_components=8, warm_start=True)]          
+Training time : 2329.1405160427094
+-----------------------------------------
+Taining AUC : 0.9445003988341701         
+Taining ERR : 0.0644628684382257                               
+-----------------------------------------                      
+Val AUC : 0.9444414448678897                                   
+Val ERR : 0.062104252297305394  
+
+                                                                                               
+Experiment Name:  gmm_0.032_0.008 
+/home/zhuhy/anaconda3/envs/vad/lib/python3.8/site-packages/sklearn/mixture/_base.py:265: ConvergenceWarning: Initialization 1 d
+id not converge. Try different init parameters, or increase max_iter, tol or check for degenerate data.                        
+  warnings.warn('Initialization %d did not converge. '
+Training score : [GaussianMixture(n_components=9, warm_start=True), GaussianMixture(n_components=9, warm_start=True)]          
+Training time : 3193.3329768180847  
+-----------------------------------------
+Taining AUC : 0.9419552523358554                               
+Taining ERR : 0.06323742542432463
+-----------------------------------------                                                                                      
+Val AUC : 0.943056920895338                                    
+Val ERR : 0.06097807437513154 
+
+Experiment Name:  gmm_0.032_0.008
+/home/zhuhy/anaconda3/envs/vad/lib/python3.8/site-packages/sklearn/mixture/_base.py:265: ConvergenceWarning: Initialization 1 did not converge. Try different init parameters, or increase max_iter, tol or check for degenerate data.
+  warnings.warn('Initialization %d did not converge. '
+Training score : [GaussianMixture(n_components=10, warm_start=True), GaussianMixture(n_components=10, warm_start=True)]
+Training time : 2744.8162808418274
+-----------------------------------------
+Taining AUC : 0.9420498231623653
+Taining ERR : 0.05807678965659542
+-----------------------------------------
+Val AUC : 0.9430612908499156
+Val ERR : 0.057418348616181
+
+
+Experiment Name:  gmm_0.032_0.008
+/home/zhuhy/anaconda3/envs/vad/lib/python3.8/site-packages/sklearn/mixture/_base.py:265: ConvergenceWarning: Initialization 1 did not converge. Try different init parameters, or increase max_iter, tol or check for degenerate data.
+  warnings.warn('Initialization %d did not converge. '
+Training score : [GaussianMixture(n_components=11, warm_start=True), GaussianMixture(n_components=11, warm_start=True)]
+Training time : 3523.2581040859222
+-----------------------------------------
+Taining AUC : 0.9423977843857549
+Taining ERR : 0.05802339176082076
+-----------------------------------------
+Val AUC : 0.9435306874739343
+Val ERR : 0.057175830103237624
+
+
+Experiment Name:  gmm_0.032_0.008
+Training score : [GaussianMixture(n_components=12, warm_start=True), GaussianMixture(n_components=12, warm_start=True)]
+Training time : 3132.0094509124756
+-----------------------------------------
+Taining AUC : 0.9438811928884401
+Taining ERR : 0.058164044913821406
+-----------------------------------------
+Val AUC : 0.9450950022239178
+Val ERR : 0.056151398453735415

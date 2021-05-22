@@ -93,9 +93,9 @@ def exp(m, features_train, target_train, features_val, target_val, name):
 
     if target_val is not None:
         print('-----------------------------------------')
-        val_auc, val_err = validate(m, features_val, target_val)
+        val_auc, val_eer = validate(m, features_val, target_val)
         print('Val AUC :', val_auc)
-        print('Val ERR :', val_err)
+        print('Val ERR :', val_eer)
 
 def main():
     if not os.path.exists(train_label_path):
