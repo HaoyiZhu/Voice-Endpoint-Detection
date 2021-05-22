@@ -26,15 +26,15 @@ python train.py --task 1 --f_size 0.064 --f_shift 0.032 --exp svm_not_normalized
 
 ## Inference
 ```bash
-# By default, the results will be saved in `'./task1/task1_prediction_on_test'`. Please refer to the code for all flags.
+# By default, the results will be saved in './task1/task1_prediction_on_test'. Please refer to the code for all flags.
 # Example:
-python inference.py --model {model name}
+python inference.py --model {model name} --f_size 0.064 --f_shift 0.032
 ```
 
 ## Validation
 - To use existed model to validate, you can run:
 ```bash
-python validate.py --model {model name}
+python validate.py --model {model name} --f_size 0.064 --f_shift 0.032
 ```
 # Task 2
 ## Training
@@ -49,6 +49,16 @@ python train.py --task 2
 python train.py --task 2 --f_size 0.032 --f_shift 0.008 --exp gmm --n_cpnt 10
 ```
 
+## Inference
+```bash
+# By default, the results will be saved in './task1/task1_prediction_on_test'. Please refer to the code for all flags.
+# Example:
+python inference.py --task 2 --model {model name} --f_size 0.064 --f_shift 0.032
+```
+
 ## Validation
-- To be continued.
+- To use existed model to validate, you can run:
+```bash
+python validate.py --task 2 --model {model name} --f_size 0.064 --f_shift 0.032
+```
 
