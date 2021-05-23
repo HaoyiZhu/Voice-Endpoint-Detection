@@ -37,8 +37,14 @@ python inference.py --model {model name} --f_size 0.064 --f_shift 0.032
 python validate.py --model {model name} --f_size 0.064 --f_shift 0.032
 ```
 # Task 2
-## Training
 
+- Features visualization:
+
+<div align="center">
+    <img src="vis.png", width="400">
+</div>
+
+## Training
 - Just add the task 2 options.
 ```bash
 # Start training with: 
