@@ -41,13 +41,13 @@ python validate.py --model {model name} --f_size 0.064 --f_shift 0.032
 - Features visualization:
 
 <div align="center">
-    <img src="./pictures/vis1.png", width="400">
-Distribution of partial features
+    <img src="./pictures/vis1.png", width="400" alt><br>
+    Feature Distribution (from partial samples)
 </div>
 
 <div align="center">
-    <img src="./pictures/vis2.png", width="400">
-Distribution of all features
+    <img src="./pictures/vis2.png", width="400" alt><br>
+    Feature Distribution (from all samples)
 </div>
 
 ## Training
